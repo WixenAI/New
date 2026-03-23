@@ -1,6 +1,18 @@
 import { jsPDF } from "jspdf";
-import { formatCurrency } from "./formatters";
 import { resolveAssetUrl } from "./assets";
+
+function formatCurrencyValue(value) {
+  const amount = Number(value ?? 0);
+
+  if (Number.isNaN(amount)) {
+    return "INR 0.00";
+  }
+
+  return `INR ${new Intl.NumberFormat("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(amount)}`;
+}
 
 function formatDateValue(value) {
   if (!value) {
@@ -266,7 +278,7 @@ export async function downloadCustomerKycPdf({ broker, client }) {
     doc,
     [
       { label: "Application Date", value: formatDateValue(kyc.applicationDate), ratio: 1 },
-      { label: "Initial Deposit (INR)", value: formatCurrency(kyc.initialDeposit || 0), ratio: 1.1 },
+      { label: "Initial Deposit (INR)", value: formatCurrencyValue(kyc.initialDeposit || 0), ratio: 1.1 },
     ],
     margin,
     leftY,

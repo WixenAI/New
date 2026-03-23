@@ -31,7 +31,7 @@ function resolveTradeMode(input) {
 function normalizeTradeInput(input) {
   const quantity = Number(input.quantity || 0);
   const entryPrice = Number(input.entryPrice ?? input.buyPrice ?? 0);
-  const exitValue = input.exitPrice ?? input.sellPrice;
+  const exitValue = input.sellPrice ?? input.exitPrice;
   const exitPrice = exitValue === "" || exitValue === null || exitValue === undefined ? undefined : Number(exitValue);
   const stockName = String(input.stockName || input.symbol || "").trim().toUpperCase();
   const brokeragePercent = Number(input.brokeragePercent || 0);
@@ -125,7 +125,15 @@ async function updateBrokerTrade(req, res) {
     return res.status(404).json({ message: "Client not found for this broker." });
   }
 
-  const payload = normalizeTradeInput({ ...existingTrade.toObject(), ...req.body, clientId });
+  const payload = normalizeTradeInput({
+    ...existingTrade.toObject(),
+    ...req.body,
+    clientId,
+    buyPrice: req.body.buyPrice ?? req.body.entryPrice ?? existingTrade.buyPrice ?? existingTrade.entryPrice,
+    entryPrice: req.body.entryPrice ?? req.body.buyPrice ?? existingTrade.entryPrice ?? existingTrade.buyPrice,
+    sellPrice: req.body.sellPrice ?? req.body.exitPrice ?? existingTrade.sellPrice ?? existingTrade.exitPrice,
+    exitPrice: req.body.exitPrice ?? req.body.sellPrice ?? existingTrade.exitPrice ?? existingTrade.sellPrice,
+  });
   const metrics = calculateCharges(payload);
   const trade = await Trade.findOneAndUpdate(
     { _id: req.params.tradeId, brokerId: req.broker._id },
