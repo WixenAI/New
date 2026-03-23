@@ -14,15 +14,14 @@ const tradeModeOptions = [
   { value: "cnc", label: "Carryforward - CNC" },
 ];
 
-function getDateTimeInputValue(value = new Date()) {
+function getDateInputValue(value = new Date()) {
   const date = value instanceof Date ? value : new Date(value);
 
   if (Number.isNaN(date.getTime())) {
-    return getDateTimeInputValue(new Date());
+    return getDateInputValue(new Date());
   }
 
-  const offsetDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
-  return offsetDate.toISOString().slice(0, 16);
+  return date.toISOString().slice(0, 10);
 }
 
 const initialForm = {
@@ -34,7 +33,7 @@ const initialForm = {
   quantity: 1,
   buyPrice: "",
   sellPrice: "",
-  tradedAt: getDateTimeInputValue(),
+  tradedAt: getDateInputValue(),
   brokeragePercent: "0.10",
 };
 
@@ -82,7 +81,7 @@ function getTradeModeLabel(tradeMode) {
   return tradeModeOptions.find((option) => option.value === tradeMode)?.label || "Intraday - MIS";
 }
 
-function formatTradeDateTime(value) {
+function formatTradeDate(value) {
   if (!value) {
     return "-";
   }
@@ -96,8 +95,6 @@ function formatTradeDateTime(value) {
     day: "2-digit",
     month: "short",
     year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
   });
 }
 
@@ -106,7 +103,7 @@ function TradeHistoryCard({ trade, brokerageHouseName, brokerLogoUrl, brokerLogo
   const tradeSide = String(trade.side || "buy").toLowerCase();
   const customerName = trade.clientId?.fullName || "-";
   const customerId = trade.clientId?.idCode || trade.clientId?.clientCode || "-";
-  const tradeDateTime = formatTradeDateTime(trade.tradedAt);
+  const tradeDate = formatTradeDate(trade.tradedAt);
   const detailRows = [
     { label: "Product Type", value: <span className={tradeSide === "buy" ? "trade-record-card__product-text trade-record-card__product-text--buy" : "trade-record-card__product-text trade-record-card__product-text--sell"}>{tradeSide.toUpperCase()}</span> },
     { label: "Quantity", value: <strong>{formatNumber(trade.quantity)}</strong> },
@@ -136,7 +133,7 @@ function TradeHistoryCard({ trade, brokerageHouseName, brokerLogoUrl, brokerLogo
           <span className={openTrade ? "status-pill status-pill--open" : "status-pill status-pill--closed"}>
             {openTrade ? "Open" : "Closed"}
           </span>
-          <span className="trade-record-card__date">{tradeDateTime}</span>
+          <span className="trade-record-card__date">{tradeDate}</span>
         </div>
       </div>
 
@@ -273,9 +270,9 @@ function TradeForm({ clients, form, setForm, saving, onSubmit, onCancel, isEditi
       </label>
 
       <label>
-        Date &amp; time
+        Date
         <input
-          type="datetime-local"
+          type="date"
           value={form.tradedAt}
           onChange={(event) => setForm({ ...form, tradedAt: event.target.value })}
           required
@@ -361,7 +358,7 @@ export default function BrokerTradesPage() {
     quantity: trade.quantity || 1,
     buyPrice: trade.buyPrice ?? trade.entryPrice ?? "",
     sellPrice: trade.sellPrice ?? trade.exitPrice ?? "",
-    tradedAt: getDateTimeInputValue(trade.tradedAt),
+    tradedAt: getDateInputValue(trade.tradedAt),
     brokeragePercent: trade.brokeragePercent ?? "0.10",
   }), []);
 
@@ -410,7 +407,7 @@ export default function BrokerTradesPage() {
   const brokerLogoText = broker?.branding?.logoText || broker?.name || "BR";
 
   function resetForm() {
-    setForm({ ...initialForm, clientId: clients[0]?._id || "", tradedAt: getDateTimeInputValue() });
+    setForm({ ...initialForm, clientId: clients[0]?._id || "", tradedAt: getDateInputValue() });
     setEditingTradeId("");
     setActiveTab("new");
     setError("");
@@ -465,7 +462,7 @@ export default function BrokerTradesPage() {
         setActiveTab("history");
       }
 
-      setForm({ ...initialForm, clientId: clients[0]?._id || "", tradedAt: getDateTimeInputValue() });
+      setForm({ ...initialForm, clientId: clients[0]?._id || "", tradedAt: getDateInputValue() });
     } catch (requestError) {
       setError(requestError.response?.data?.message || "Unable to save trade.");
     } finally {

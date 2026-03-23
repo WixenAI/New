@@ -1,4 +1,4 @@
-import { formatCurrency, formatDate } from "../../utils/formatters";
+import { formatAmount, formatDate, formatRupee } from "../../utils/formatters";
 import { resolveAssetUrl } from "../../utils/assets";
 
 const sampleRows = [
@@ -118,10 +118,10 @@ export default function BrokerInvoicePreview({
 
               <div className="invoice-preview__mobile-grid">
                 <div><span>Qty</span><strong>{row.quantity}</strong></div>
-                <div><span>Entry</span><strong>{formatCurrency(row.buyPrice ?? row.entryPrice)}</strong></div>
-                <div><span>Exit</span><strong>{formatCurrency(row.sellPrice ?? row.exitPrice)}</strong></div>
-                <div><span>Brokerage</span><strong>{formatCurrency(row.charges?.total)}</strong></div>
-                <div><span>Net P&L</span><strong className={row.netPnL >= 0 ? "text-success" : "text-danger"}>{formatCurrency(row.netPnL)}</strong></div>
+                <div><span>Entry</span><strong>{formatAmount(row.buyPrice ?? row.entryPrice)}</strong></div>
+                <div><span>Exit</span><strong>{formatAmount(row.sellPrice ?? row.exitPrice)}</strong></div>
+                <div><span>Brokerage</span><strong>{formatAmount(row.charges?.total)}</strong></div>
+                <div><span>Net P&L</span><strong className={row.netPnL >= 0 ? "text-success" : "text-danger"}>{formatRupee(row.netPnL)}</strong></div>
               </div>
             </article>
           ))}
@@ -148,10 +148,10 @@ export default function BrokerInvoicePreview({
                   <td>{row.stockName || row.symbol}</td>
                   <td className="invoice-preview__cell--center">{String(row.side || "buy").toUpperCase()}</td>
                   <td className="invoice-preview__cell--right">{row.quantity}</td>
-                  <td className="invoice-preview__cell--right">{formatCurrency(row.buyPrice ?? row.entryPrice)}</td>
-                  <td className="invoice-preview__cell--right">{formatCurrency(row.sellPrice ?? row.exitPrice)}</td>
-                  <td className="invoice-preview__cell--right">{formatCurrency(row.charges?.total)}</td>
-                  <td className={row.netPnL >= 0 ? "invoice-preview__cell--right text-success" : "invoice-preview__cell--right text-danger"}>{formatCurrency(row.netPnL)}</td>
+                  <td className="invoice-preview__cell--right">{formatAmount(row.buyPrice ?? row.entryPrice)}</td>
+                  <td className="invoice-preview__cell--right">{formatAmount(row.sellPrice ?? row.exitPrice)}</td>
+                  <td className="invoice-preview__cell--right">{formatAmount(row.charges?.total)}</td>
+                  <td className={row.netPnL >= 0 ? "invoice-preview__cell--right text-success" : "invoice-preview__cell--right text-danger"}>{formatRupee(row.netPnL)}</td>
                 </tr>
               ))}
             </tbody>
@@ -161,9 +161,9 @@ export default function BrokerInvoicePreview({
         <div className="invoice-preview__summary-wrap invoice-preview__summary-wrap--compact">
           <div className="invoice-preview__summary">
             <div><span>Total Trades</span><strong>{invoiceSummary.totalTrades}</strong></div>
-            <div><span>Brokerage</span><strong>{formatCurrency(invoiceSummary.totalBrokerage)}</strong></div>
-            <div><span>Gross P&amp;L</span><strong className={invoiceSummary.grossPnL >= 0 ? "text-success" : "text-danger"}>{formatCurrency(invoiceSummary.grossPnL)}</strong></div>
-            <div className="invoice-preview__summary-total"><span>Net P&amp;L</span><strong className={invoiceSummary.netPnL >= 0 ? "text-success" : "text-danger"}>{formatCurrency(invoiceSummary.netPnL)}</strong></div>
+            <div><span>Brokerage</span><strong>{formatAmount(invoiceSummary.totalBrokerage)}</strong></div>
+            <div><span>Gross P&amp;L</span><strong className={invoiceSummary.grossPnL >= 0 ? "text-success" : "text-danger"}>{formatRupee(invoiceSummary.grossPnL)}</strong></div>
+            <div className="invoice-preview__summary-total"><span>Net P&amp;L</span><strong className={invoiceSummary.netPnL >= 0 ? "text-success" : "text-danger"}>{formatRupee(invoiceSummary.netPnL)}</strong></div>
           </div>
         </div>
 

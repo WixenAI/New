@@ -16,9 +16,6 @@ const initialForm = {
   brokerageHouseName: "",
   logoText: "",
   shortName: "",
-  primaryColor: "#18b5d6",
-  accentColor: "#87dff0",
-  surfaceTint: "#f2fcff",
   headerTone: "",
   signatureLabel: "Authorized Signature",
   trademarkLabel: "Registered Mark",
@@ -74,9 +71,6 @@ export default function SettingsPage() {
       brokerageHouseName: selectedBroker.branding?.brokerageHouseName || selectedBroker.name || "",
       logoText: selectedBroker.branding?.logoText || "",
       shortName: selectedBroker.branding?.shortName || "",
-      primaryColor: selectedBroker.branding?.primaryColor || "#18b5d6",
-      accentColor: selectedBroker.branding?.accentColor || "#87dff0",
-      surfaceTint: selectedBroker.branding?.surfaceTint || "#f2fcff",
       headerTone: selectedBroker.branding?.headerTone || "",
       signatureLabel: selectedBroker.branding?.signatureLabel || "Authorized Signature",
       trademarkLabel: selectedBroker.branding?.trademarkLabel || "Registered Mark",
@@ -120,9 +114,6 @@ export default function SettingsPage() {
           brokerageHouseName: form.brokerageHouseName,
           logoText: form.logoText,
           shortName: form.shortName,
-          primaryColor: form.primaryColor,
-          accentColor: form.accentColor,
-          surfaceTint: form.surfaceTint,
           headerTone: form.headerTone,
           signatureLabel: form.signatureLabel,
           trademarkLabel: form.trademarkLabel,
@@ -244,20 +235,8 @@ export default function SettingsPage() {
               </div>
             </SettingsAccordion>
 
-            <SettingsAccordion title="Visual theme and labels">
+            <SettingsAccordion title="Document labels">
               <div className="form-grid settings-form__grid settings-form__grid--dense">
-                <label>
-                  Primary color
-                  <input type="color" value={form.primaryColor} onChange={(event) => setForm({ ...form, primaryColor: event.target.value })} />
-                </label>
-                <label>
-                  Accent color
-                  <input type="color" value={form.accentColor} onChange={(event) => setForm({ ...form, accentColor: event.target.value })} />
-                </label>
-                <label>
-                  Surface tint
-                  <input type="color" value={form.surfaceTint} onChange={(event) => setForm({ ...form, surfaceTint: event.target.value })} />
-                </label>
                 <label>
                   Statement prefix
                   <input value={form.statementPrefix} onChange={(event) => setForm({ ...form, statementPrefix: event.target.value.toUpperCase() })} />

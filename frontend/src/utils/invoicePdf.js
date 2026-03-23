@@ -1,5 +1,51 @@
 import { jsPDF } from "jspdf";
 import { resolveAssetUrl } from "./assets";
+import { formatAmount, formatRupee } from "./formatters";
+
+const PDF_RUPEE_FONT_FAMILY = "invoice-noto-sans";
+const PUBLIC_URL = process.env.PUBLIC_URL || "";
+let invoicePdfFontPromise = null;
+
+function arrayBufferToBase64(buffer) {
+  let binary = "";
+  const bytes = new Uint8Array(buffer);
+  const chunkSize = 0x8000;
+
+  for (let index = 0; index < bytes.length; index += chunkSize) {
+    binary += String.fromCharCode(...bytes.subarray(index, index + chunkSize));
+  }
+
+  return btoa(binary);
+}
+
+async function loadFontBase64(url) {
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Unable to load font from ${url}`);
+  }
+
+  return arrayBufferToBase64(await response.arrayBuffer());
+}
+
+async function ensureInvoicePdfFonts(doc) {
+  try {
+    if (!invoicePdfFontPromise) {
+      invoicePdfFontPromise = Promise.all([
+        loadFontBase64(`${PUBLIC_URL}/fonts/NotoSans-Regular.ttf`),
+        loadFontBase64(`${PUBLIC_URL}/fonts/NotoSans-Bold.ttf`),
+      ]).then(([regular, bold]) => ({ regular, bold }));
+    }
+
+    const fonts = await invoicePdfFontPromise;
+    doc.addFileToVFS("NotoSans-Regular.ttf", fonts.regular);
+    doc.addFont("NotoSans-Regular.ttf", PDF_RUPEE_FONT_FAMILY, "normal");
+    doc.addFileToVFS("NotoSans-Bold.ttf", fonts.bold);
+    doc.addFont("NotoSans-Bold.ttf", PDF_RUPEE_FONT_FAMILY, "bold");
+    return PDF_RUPEE_FONT_FAMILY;
+  } catch (error) {
+    return "helvetica";
+  }
+}
 
 function formatNumberValue(value, { minimumFractionDigits = 0, maximumFractionDigits = 0 } = {}) {
   const amount = Number(value ?? 0);
@@ -14,7 +60,7 @@ function formatNumberValue(value, { minimumFractionDigits = 0, maximumFractionDi
   }).format(amount);
 }
 
-function formatCurrencyValue(value, fallback = "INR 0.00") {
+function formatAmountValue(value, fallback = "0.00") {
   if (value === "" || value === null || value === undefined) {
     return fallback;
   }
@@ -24,13 +70,20 @@ function formatCurrencyValue(value, fallback = "INR 0.00") {
     return fallback;
   }
 
-  const normalizedAmount = Math.abs(amount) < 0.005 ? 0 : amount;
-  const formattedAmount = new Intl.NumberFormat("en-IN", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(Math.abs(normalizedAmount));
+  return formatAmount(amount);
+}
 
-  return `${normalizedAmount < 0 ? "-" : ""}INR ${formattedAmount}`;
+function formatRupeeValue(value, fallback = "\u20B90.00") {
+  if (value === "" || value === null || value === undefined) {
+    return fallback;
+  }
+
+  const amount = Number(value);
+  if (Number.isNaN(amount)) {
+    return fallback;
+  }
+
+  return formatRupee(amount);
 }
 
 function formatDateValue(value) {
@@ -193,7 +246,7 @@ function getTableColumns() {
       width: 74,
       align: "right",
       wrap: false,
-      getValue: (trade) => formatCurrencyValue(trade.buyPrice ?? trade.entryPrice),
+      getValue: (trade) => formatAmountValue(trade.buyPrice ?? trade.entryPrice),
     },
     {
       key: "exit",
@@ -201,7 +254,7 @@ function getTableColumns() {
       width: 74,
       align: "right",
       wrap: false,
-      getValue: (trade) => formatCurrencyValue(trade.sellPrice ?? trade.exitPrice),
+      getValue: (trade) => formatAmountValue(trade.sellPrice ?? trade.exitPrice),
     },
     {
       key: "brokerage",
@@ -209,7 +262,7 @@ function getTableColumns() {
       width: 72,
       align: "right",
       wrap: false,
-      getValue: (trade) => formatCurrencyValue(trade.charges?.total),
+      getValue: (trade) => formatAmountValue(trade.charges?.total),
     },
     {
       key: "netPnL",
@@ -217,7 +270,7 @@ function getTableColumns() {
       width: 78,
       align: "right",
       wrap: false,
-      getValue: (trade) => formatCurrencyValue(trade.netPnL),
+      getValue: (trade) => formatRupeeValue(trade.netPnL),
     },
   ];
 }
@@ -330,7 +383,7 @@ function measureTradeRow(doc, trade, columns) {
   return { cells, rowHeight, lineHeight };
 }
 
-function drawTradeRow(doc, trade, y, margin, columns) {
+function drawTradeRow(doc, trade, y, margin, columns, amountFontFamily) {
   const totalWidth = columns.reduce((acc, column) => acc + column.width, 0);
   const { cells, rowHeight, lineHeight } = measureTradeRow(doc, trade, columns);
   let x = margin;
@@ -340,8 +393,10 @@ function drawTradeRow(doc, trade, y, margin, columns) {
 
   cells.forEach((cell) => {
     if (cell.key === "netPnL") {
+      doc.setFont(amountFontFamily, "normal");
       setPnLTextColor(doc, trade.netPnL);
     } else {
+      doc.setFont("helvetica", "normal");
       doc.setTextColor(17, 24, 39);
     }
 
@@ -349,6 +404,7 @@ function drawTradeRow(doc, trade, y, margin, columns) {
     x += cell.width;
   });
 
+  doc.setFont("helvetica", "normal");
   doc.setTextColor(17, 24, 39);
 
   doc.setDrawColor(226, 232, 240);
@@ -357,15 +413,15 @@ function drawTradeRow(doc, trade, y, margin, columns) {
   return rowHeight + 2;
 }
 
-function drawSummary(doc, summary, y, margin, pageWidth) {
+function drawSummary(doc, summary, y, margin, pageWidth, amountFontFamily) {
   const boxWidth = 196;
   const boxHeight = 80;
   const x = pageWidth - margin - boxWidth;
   const rows = [
-    { label: "Total Trades", value: String(summary?.totalTrades || 0), amount: null, isBold: false },
-    { label: "Brokerage", value: formatCurrencyValue(summary?.totalBrokerage), amount: null, isBold: false },
-    { label: "Gross P&L", value: formatCurrencyValue(summary?.grossPnL), amount: summary?.grossPnL, isBold: false },
-    { label: "Net P&L", value: formatCurrencyValue(summary?.netPnL), amount: summary?.netPnL, isBold: true },
+    { label: "Total Trades", value: String(summary?.totalTrades || 0), amount: null, isBold: false, useRupeeFont: false },
+    { label: "Brokerage", value: formatAmountValue(summary?.totalBrokerage), amount: null, isBold: false, useRupeeFont: false },
+    { label: "Gross P&L", value: formatRupeeValue(summary?.grossPnL), amount: summary?.grossPnL, isBold: false, useRupeeFont: true },
+    { label: "Net P&L", value: formatRupeeValue(summary?.netPnL), amount: summary?.netPnL, isBold: true, useRupeeFont: true },
   ];
 
   doc.setFillColor(248, 250, 252);
@@ -376,8 +432,9 @@ function drawSummary(doc, summary, y, margin, pageWidth) {
 
   rows.forEach((row, index) => {
     const rowY = y + 15 + index * 16;
+    doc.setFont("helvetica", "normal");
     doc.text(row.label, x + 10, rowY);
-    doc.setFont("helvetica", row.isBold ? "bold" : "normal");
+    doc.setFont(row.useRupeeFont ? amountFontFamily : "helvetica", row.isBold ? "bold" : "normal");
 
     if (row.amount === null || row.amount === undefined) {
       doc.setTextColor(row.isBold ? 17 : 51, row.isBold ? 24 : 65, row.isBold ? 39 : 81);
@@ -441,6 +498,7 @@ export async function downloadBrokerInvoicePdf({ broker, client, trades, filters
   const columns = getTableColumns();
   const invoiceTrades = trades || [];
   const generatedAt = new Date();
+  const amountFontFamily = await ensureInvoicePdfFonts(doc);
 
   const [logoImage, trademarkImage] = await Promise.all([
     urlToDataUrl(broker?.branding?.logoUrl),
@@ -462,7 +520,7 @@ export async function downloadBrokerInvoicePdf({ broker, client, trades, filters
       y = drawTableHeader(doc, y, margin, columns);
     }
 
-    y += drawTradeRow(doc, trade, y, margin, columns);
+    y += drawTradeRow(doc, trade, y, margin, columns, amountFontFamily);
   });
 
   const summaryHeight = 96;
@@ -473,7 +531,7 @@ export async function downloadBrokerInvoicePdf({ broker, client, trades, filters
   }
 
   y += 14;
-  drawSummary(doc, summary || { totalTrades: 0, totalBrokerage: 0, grossPnL: 0, netPnL: 0 }, y, margin, pageWidth);
+  drawSummary(doc, summary || { totalTrades: 0, totalBrokerage: 0, grossPnL: 0, netPnL: 0 }, y, margin, pageWidth, amountFontFamily);
 
   const totalPages = doc.getNumberOfPages();
   for (let pageNumber = 1; pageNumber <= totalPages; pageNumber += 1) {

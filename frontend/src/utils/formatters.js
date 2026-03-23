@@ -6,6 +6,27 @@ export function formatCurrency(value) {
   }).format(Number(value || 0));
 }
 
+export function formatAmount(value) {
+  const amount = Number(value ?? 0);
+  const normalizedAmount = Number.isNaN(amount) || Math.abs(amount) < 0.005 ? 0 : amount;
+
+  return new Intl.NumberFormat("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(normalizedAmount);
+}
+
+export function formatRupee(value) {
+  const amount = Number(value ?? 0);
+  const normalizedAmount = Number.isNaN(amount) || Math.abs(amount) < 0.005 ? 0 : amount;
+  const formattedAmount = new Intl.NumberFormat("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(Math.abs(normalizedAmount));
+
+  return `${normalizedAmount < 0 ? "-" : ""}\u20B9${formattedAmount}`;
+}
+
 export function formatNumber(value) {
   return new Intl.NumberFormat("en-IN").format(Number(value || 0));
 }

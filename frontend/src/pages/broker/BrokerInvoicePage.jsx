@@ -7,7 +7,7 @@ import PageHeader from "../../components/PageHeader";
 import SectionTabs from "../../components/SectionTabs";
 import { useBrokerAuth } from "../../context/BrokerAuthContext";
 import { downloadBrokerInvoicePdf } from "../../utils/invoicePdf";
-import { formatCurrency, formatDate } from "../../utils/formatters";
+import { formatAmount, formatDate, formatRupee } from "../../utils/formatters";
 
 export default function BrokerInvoicePage() {
   const navigate = useNavigate();
@@ -204,7 +204,7 @@ export default function BrokerInvoicePage() {
                       <strong>{trade.stockName || trade.symbol}</strong>
                       <span>{formatDate(trade.tradedAt)} · {String(trade.side).toUpperCase()}</span>
                     </div>
-                    <strong className={trade.netPnL >= 0 ? "text-success" : "text-danger"}>{formatCurrency(trade.netPnL)}</strong>
+                    <strong className={trade.netPnL >= 0 ? "text-success" : "text-danger"}>{formatRupee(trade.netPnL)}</strong>
                   </div>
 
                   <div className="mobile-entity-card__meta">
@@ -214,15 +214,15 @@ export default function BrokerInvoicePage() {
                     </div>
                     <div>
                       <span>Buy</span>
-                      <strong>{formatCurrency(trade.buyPrice ?? trade.entryPrice)}</strong>
+                      <strong>{formatAmount(trade.buyPrice ?? trade.entryPrice)}</strong>
                     </div>
                     <div>
                       <span>Sell</span>
-                      <strong>{formatCurrency(trade.sellPrice ?? trade.exitPrice)}</strong>
+                      <strong>{formatAmount(trade.sellPrice ?? trade.exitPrice)}</strong>
                     </div>
                     <div>
                       <span>Charges</span>
-                      <strong>{formatCurrency(trade.charges?.total)}</strong>
+                      <strong>{formatAmount(trade.charges?.total)}</strong>
                     </div>
                   </div>
                 </article>

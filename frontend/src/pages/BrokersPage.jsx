@@ -14,8 +14,6 @@ const initialForm = {
   brokerageHouseName: "",
   contactEmail: "",
   contactPhone: "",
-  primaryColor: "#18b5d6",
-  accentColor: "#87dff0",
 };
 
 function getBrandingStatus(broker) {
@@ -32,9 +30,10 @@ function getBrandingStatus(broker) {
 
 export default function BrokersPage() {
   const navigate = useNavigate();
-  const { brokers, selectedBrokerId, setSelectedBrokerId, createBroker, deleteBroker } = useAppContext();
+  const { brokers, selectedBrokerId, setSelectedBrokerId, createBroker, deleteBroker, updateBroker } = useAppContext();
   const [form, setForm] = useState(initialForm);
   const [submitting, setSubmitting] = useState(false);
+  const [togglingBrokerId, setTogglingBrokerId] = useState("");
   const [error, setError] = useState("");
   const [isBrokerListOpen, setIsBrokerListOpen] = useState(true);
   const [clients, setClients] = useState([]);
@@ -85,8 +84,6 @@ export default function BrokersPage() {
           brokerageHouseName: form.brokerageHouseName || form.name,
           shortName: form.name,
           logoText: (form.name || "BR").slice(0, 2).toUpperCase(),
-          primaryColor: form.primaryColor,
-          accentColor: form.accentColor,
         },
       });
       setForm(initialForm);
@@ -105,9 +102,24 @@ export default function BrokersPage() {
     await deleteBroker(brokerId);
   }
 
-  function openWorkspace(brokerId) {
-    setSelectedBrokerId(brokerId);
-    navigate("/admin/dashboard");
+  async function handleToggleBrokerStatus(broker) {
+    const isActive = broker.status !== "inactive";
+    const nextStatus = isActive ? "inactive" : "active";
+
+    if (!window.confirm(`${isActive ? "Block" : "Unblock"} ${broker.name}?`)) {
+      return;
+    }
+
+    setError("");
+    setTogglingBrokerId(broker._id);
+
+    try {
+      await updateBroker(broker._id, { status: nextStatus });
+    } catch (requestError) {
+      setError(requestError.response?.data?.message || `Unable to ${isActive ? "block" : "unblock"} broker.`);
+    } finally {
+      setTogglingBrokerId("");
+    }
   }
 
   function openSettings(brokerId) {
@@ -150,12 +162,7 @@ export default function BrokersPage() {
                         {logoUrl ? (
                           <img src={logoUrl} alt={`${broker.name} logo`} className="broker-card__logo" />
                         ) : (
-                          <div
-                            className="broker-card__swatch"
-                            style={{
-                              backgroundColor: broker.branding?.primaryColor || "#18b5d6",
-                            }}
-                          >
+                          <div className="broker-card__swatch">
                             {broker.branding?.logoText || "BR"}
                           </div>
                         )}
@@ -173,20 +180,33 @@ export default function BrokersPage() {
 
                       <div className="broker-card__meta">
                         <span>{brandingStatus}</span>
-                        <span>{broker.status}</span>
+                        <span className={`status-pill status-pill--${broker.status === "inactive" ? "inactive" : "active"}`}>
+                          {titleCase(broker.status || "active")}
+                        </span>
                       </div>
 
                       <div className="broker-card__actions broker-card__actions--wrap">
-                        <button className="btn btn--primary" onClick={() => openWorkspace(broker._id)}>
-                          Open Workspace
+                        <button
+                          className={broker.status === "inactive" ? "btn btn--primary" : "btn btn--danger"}
+                          type="button"
+                          onClick={() => handleToggleBrokerStatus(broker)}
+                          disabled={togglingBrokerId === broker._id}
+                        >
+                          {togglingBrokerId === broker._id
+                            ? broker.status === "inactive"
+                              ? "Unblocking..."
+                              : "Blocking..."
+                            : broker.status === "inactive"
+                              ? "Unblock Broker"
+                              : "Block Broker"}
                         </button>
-                        <button className="btn btn--ghost" onClick={() => openSettings(broker._id)}>
+                        <button className="btn btn--ghost" type="button" onClick={() => openSettings(broker._id)}>
                           Branding
                         </button>
-                        <button className="btn btn--ghost" onClick={() => openTemplate(broker._id)}>
+                        <button className="btn btn--ghost" type="button" onClick={() => openTemplate(broker._id)}>
                           Template
                         </button>
-                        <button className="btn btn--danger" onClick={() => handleDelete(broker._id)}>
+                        <button className="btn btn--danger" type="button" onClick={() => handleDelete(broker._id)}>
                           Delete
                         </button>
                       </div>
@@ -239,14 +259,6 @@ export default function BrokersPage() {
             <label>
               Contact phone
               <input value={form.contactPhone} onChange={(event) => setForm({ ...form, contactPhone: event.target.value })} />
-            </label>
-            <label>
-              Primary color
-              <input type="color" value={form.primaryColor} onChange={(event) => setForm({ ...form, primaryColor: event.target.value })} />
-            </label>
-            <label>
-              Accent color
-              <input type="color" value={form.accentColor} onChange={(event) => setForm({ ...form, accentColor: event.target.value })} />
             </label>
 
             {error ? <div className="alert-strip form-grid__span-2">{error}</div> : null}

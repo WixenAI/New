@@ -74,6 +74,17 @@ function splitName(fullName = "") {
   };
 }
 
+function buildLegalLine(broker) {
+  const legalName = String(broker?.legalName || "").trim();
+  const baseName = legalName || broker?.branding?.brokerageHouseName || broker?.name || "Broker";
+
+  if (/stock brokers pvt ltd\.?$/i.test(baseName)) {
+    return baseName;
+  }
+
+  return `${baseName} Stock Brokers PVT LTD.`;
+}
+
 function fitLines(doc, value, width, maxLines = 2) {
   const rawLines = doc.splitTextToSize(String(value || "-"), Math.max(width - 2, 24));
 
@@ -188,6 +199,8 @@ export async function downloadCustomerKycPdf({ broker, client }) {
   const pageWidth = doc.internal.pageSize.getWidth();
   const margin = 26;
   const contentWidth = pageWidth - margin * 2;
+  const brokerageHouseName = broker?.branding?.brokerageHouseName || broker?.name || "Brokerage House";
+  const legalLine = buildLegalLine(broker);
 
   const [logoImage, markImage, customerPhotoImage, customerSignatureImage, aadhaarFrontImage, aadhaarBackImage, panImage] = await Promise.all([
     urlToDataUrl(broker?.branding?.logoUrl),
@@ -217,13 +230,13 @@ export async function downloadCustomerKycPdf({ broker, client }) {
   doc.setFont("helvetica", "bold");
   doc.setFontSize(15);
   doc.setTextColor(17, 24, 39);
-  doc.text(broker?.branding?.brokerageHouseName || broker?.name || "Brokerage House", margin + 54, y + 14);
+  doc.text(brokerageHouseName, margin + 54, y + 14);
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8.5);
   doc.setTextColor(75, 85, 99);
   doc.text("KYC & Client Registration Form", margin + 54, y + 29);
-  doc.text("Registered with Securities and Exchange Board of India (SEBI) as a Stock Broker", margin + 54, y + 42);
+  doc.text(legalLine, margin + 54, y + 42);
 
   y += 58;
   doc.setDrawColor(203, 213, 225);

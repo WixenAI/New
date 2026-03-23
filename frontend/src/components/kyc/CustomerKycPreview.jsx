@@ -22,6 +22,17 @@ function splitName(fullName = "") {
   };
 }
 
+function buildLegalLine(broker) {
+  const legalName = String(broker?.legalName || "").trim();
+  const baseName = legalName || broker?.branding?.brokerageHouseName || broker?.name || "Broker";
+
+  if (/stock brokers pvt ltd\.?$/i.test(baseName)) {
+    return baseName;
+  }
+
+  return `${baseName} Stock Brokers PVT LTD.`;
+}
+
 export default function CustomerKycPreview({ broker, client }) {
   if (!broker || !client) {
     return null;
@@ -29,6 +40,8 @@ export default function CustomerKycPreview({ broker, client }) {
 
   const kyc = client.kyc || {};
   const fallbackNames = splitName(client.fullName);
+  const brokerageHouseName = broker?.branding?.brokerageHouseName || broker?.name || "Brokerage House";
+  const legalLine = buildLegalLine(broker);
 
   return (
     <div className="kyc-preview">
@@ -41,9 +54,9 @@ export default function CustomerKycPreview({ broker, client }) {
               <div className="kyc-preview__brand-logo kyc-preview__brand-logo--fallback">{broker?.branding?.logoText || "BR"}</div>
             )}
             <div>
-              <h2>{broker?.branding?.brokerageHouseName || broker?.name}</h2>
+              <h2>{brokerageHouseName}</h2>
               <p>KYC & Client Registration Form</p>
-              <small>Registered with Securities and Exchange Board of India (SEBI) as a Stock Broker</small>
+              <small>{legalLine}</small>
             </div>
           </div>
         </header>

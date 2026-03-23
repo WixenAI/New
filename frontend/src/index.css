@@ -798,6 +798,16 @@ img {
   color: var(--muted);
 }
 
+.status-pill--active {
+  background: #ecfbf6;
+  color: var(--success);
+}
+
+.status-pill--inactive {
+  background: #fff4f1;
+  color: var(--danger);
+}
+
 .detail-list {
   list-style: none;
   padding: 0;
@@ -1786,11 +1796,11 @@ img {
   text-transform: uppercase;
 }
 
-.trade-record-card__product-text--buy {
+.trade-record-card__value .trade-record-card__product-text--buy {
   color: #16a34a;
 }
 
-.trade-record-card__product-text--sell {
+.trade-record-card__value .trade-record-card__product-text--sell {
   color: #dc2626;
 }
 

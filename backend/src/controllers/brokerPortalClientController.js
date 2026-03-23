@@ -150,6 +150,7 @@ function serializeBroker(broker) {
   return {
     id: broker._id,
     name: broker.name,
+    legalName: broker.legalName,
     tokenId: broker.tokenId,
     contact: broker.contact,
     branding: broker.branding,
