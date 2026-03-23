@@ -396,8 +396,8 @@ function drawSummary(doc, summary, y, margin, pageWidth) {
 function drawFooter(doc, broker, trademarkImage, margin, pageWidth, pageHeight, generatedAt, pageNumber, totalPages) {
   const footerHeight = 82;
   const topY = pageHeight - margin - footerHeight;
-  const markWidth = 116;
-  const markHeight = 42;
+  const markWidth = 140;
+  const markHeight = 52;
   const gap = 18;
   const markX = pageWidth - margin - markWidth;
   const leftWidth = markX - margin - gap;
@@ -427,7 +427,7 @@ function drawFooter(doc, broker, trademarkImage, margin, pageWidth, pageHeight, 
     drawImageContained(doc, trademarkImage, markX, topY + 16, markWidth, markHeight, { border: false, padding: 0 });
   } else {
     doc.setDrawColor(17, 24, 39);
-    doc.line(markX + 16, topY + 54, markX + markWidth, topY + 54);
+    doc.line(markX + 16, topY + 64, markX + markWidth, topY + 64);
   }
 }
 
