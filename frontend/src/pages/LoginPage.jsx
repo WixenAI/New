@@ -4,8 +4,8 @@ import { useAuth } from "../context/AuthContext";
 
 export default function LoginPage() {
   const { isAuthenticated, login } = useAuth();
-  const [username, setUsername] = useState("Dev");
-  const [password, setPassword] = useState("Dev@2580");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
@@ -41,7 +41,7 @@ export default function LoginPage() {
         <form className="auth-form" onSubmit={handleSubmit}>
           <label>
             Username
-            <input value={username} onChange={(event) => setUsername(event.target.value)} autoComplete="username" />
+            <input value={username} onChange={(event) => setUsername(event.target.value)} autoComplete="username" required />
           </label>
 
           <label>
@@ -51,6 +51,7 @@ export default function LoginPage() {
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               autoComplete="current-password"
+              required
             />
           </label>
 
