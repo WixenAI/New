@@ -78,11 +78,11 @@ function buildLegalLine(broker) {
   const legalName = String(broker?.legalName || "").trim();
   const baseName = legalName || broker?.branding?.brokerageHouseName || broker?.name || "Broker";
 
-  if (/stock brokers pvt ltd\.?$/i.test(baseName)) {
+  if (/STOCK BROKERS PVT LTD\.?$/i.test(baseName)) {
     return baseName;
   }
 
-  return `${baseName} Stock Brokers PVT LTD.`;
+  return `${baseName} STOCK BROKERS PVT LTD.`;
 }
 
 function fitLines(doc, value, width, maxLines = 2) {
