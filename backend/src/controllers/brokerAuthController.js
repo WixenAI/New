@@ -30,12 +30,12 @@ async function login(req, res) {
   const tokenId = String(req.body.tokenId || "").trim().toUpperCase();
 
   if (!tokenId) {
-    return res.status(400).json({ message: "tokenId is required." });
+    return res.status(400).json({ code: "ACCESS_ID_REQUIRED", message: "Access ID is required." });
   }
 
   const broker = await Broker.findOne({ tokenId });
   if (!broker || broker.status !== "active") {
-    return res.status(401).json({ message: "Invalid broker token." });
+    return res.status(401).json({ code: "INVALID_ACCESS_ID", message: "Invalid access ID." });
   }
 
   return res.json({
@@ -49,7 +49,7 @@ async function me(req, res) {
 }
 
 function logout(req, res) {
-  return res.json({ message: "Broker logged out." });
+  return res.json({ message: "Access ended." });
 }
 
 module.exports = { login, me, logout, serializeBroker };

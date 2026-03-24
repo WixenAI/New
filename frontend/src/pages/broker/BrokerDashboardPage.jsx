@@ -6,6 +6,7 @@ import PageHeader from "../../components/PageHeader";
 import EmptyState from "../../components/EmptyState";
 import SectionTabs from "../../components/SectionTabs";
 import { useBrokerAuth } from "../../context/BrokerAuthContext";
+import { ACCOUNT_ROUTES } from "../../constants/accessConfig";
 import { formatCurrency, formatDate, titleCase } from "../../utils/formatters";
 
 const tabs = [
@@ -46,19 +47,19 @@ export default function BrokerDashboardPage() {
         key: "customer",
         title: "Create customer",
         caption: "Save a customer",
-        onClick: () => navigate("/broker/customers", { state: { activeTab: "create" } }),
+        onClick: () => navigate(ACCOUNT_ROUTES.customers, { state: { activeTab: "create" } }),
       },
       {
         key: "trade",
         title: "View trades",
         caption: "Trade history",
-        onClick: () => navigate("/broker/trades"),
+        onClick: () => navigate(ACCOUNT_ROUTES.trades),
       },
       {
         key: "invoice",
         title: "Generate invoice",
         caption: "Build statement",
-        onClick: () => navigate("/broker/invoice", { state: { activeTab: "generate" } }),
+        onClick: () => navigate(ACCOUNT_ROUTES.invoice, { state: { activeTab: "generate" } }),
       },
     ],
     [navigate]

@@ -1,4 +1,4 @@
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import AppShell from "./components/AppShell";
 import BrokerProtectedRoute from "./components/BrokerProtectedRoute";
 import BrokerShell from "./components/BrokerShell";
@@ -6,6 +6,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import { AppProvider } from "./context/AppContext";
 import { AuthProvider } from "./context/AuthContext";
 import { BrokerAuthProvider } from "./context/BrokerAuthContext";
+import { ACCESS_ENTRY_PATH, ACCOUNT_ROUTES, mapLegacyBrokerPath } from "./constants/accessConfig";
 import BrokerInvoicePage from "./pages/broker/BrokerInvoicePage";
 import BrokerDashboardPage from "./pages/broker/BrokerDashboardPage";
 import BrokerCustomersPage from "./pages/broker/BrokerCustomersPage";
@@ -38,13 +39,19 @@ function ProtectedBrokerLayout() {
   );
 }
 
+function LegacyBrokerRedirect() {
+  const location = useLocation();
+
+  return <Navigate to={mapLegacyBrokerPath(location.pathname, location.search, location.hash)} replace />;
+}
+
 export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
         <BrokerAuthProvider>
           <Routes>
-            <Route path="/" element={<Navigate to="/broker/login" replace />} />
+            <Route path="/" element={<Navigate to={ACCESS_ENTRY_PATH} replace />} />
             <Route path="/app/*" element={<Navigate to="/admin/dashboard" replace />} />
 
             <Route path="/admin/login" element={<LoginPage />} />
@@ -59,19 +66,25 @@ export default function App() {
               <Route path="brokerage" element={<Navigate to="/admin/brokers" replace />} />
               <Route path="settings" element={<SettingsPage />} />
               <Route index element={<Navigate to="dashboard" replace />} />
+              <Route path="*" element={<Navigate to="dashboard" replace />} />
             </Route>
 
-            <Route path="/broker/login" element={<BrokerLoginPage />} />
-            <Route path="/broker" element={<ProtectedBrokerLayout />}>
+            <Route path={ACCESS_ENTRY_PATH} element={<BrokerLoginPage />} />
+            <Route path="/account" element={<ProtectedBrokerLayout />}>
               <Route path="dashboard" element={<BrokerDashboardPage />} />
               <Route path="customers" element={<BrokerCustomersPage />} />
               <Route path="trades" element={<BrokerTradesPage />} />
               <Route path="invoice" element={<BrokerInvoicePage />} />
               <Route path="profile" element={<BrokerProfilePage />} />
               <Route index element={<Navigate to="dashboard" replace />} />
+              <Route path="*" element={<Navigate to="dashboard" replace />} />
             </Route>
 
-            <Route path="*" element={<Navigate to="/broker/login" replace />} />
+            <Route path="/broker/login" element={<Navigate to={ACCESS_ENTRY_PATH} replace />} />
+            <Route path="/broker" element={<Navigate to={ACCOUNT_ROUTES.dashboard} replace />} />
+            <Route path="/broker/*" element={<LegacyBrokerRedirect />} />
+
+            <Route path="*" element={<Navigate to={ACCESS_ENTRY_PATH} replace />} />
           </Routes>
         </BrokerAuthProvider>
       </AuthProvider>

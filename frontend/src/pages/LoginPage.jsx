@@ -32,7 +32,6 @@ export default function LoginPage() {
       <div className="auth-backdrop" />
       <section className="auth-card">
         <div className="auth-card__brand">
-          <div className="auth-card__logo">BP</div>
           <div>
             <h1>Welcome</h1>
           </div>

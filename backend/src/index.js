@@ -33,6 +33,7 @@ app.get("/api/health", (req, res) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/broker-auth", brokerAuthRoutes);
+app.use("/api/access", brokerAuthRoutes);
 app.use("/api/brokers", requireAuth, brokerRoutes);
 app.use("/api/clients", requireAuth, clientRoutes);
 app.use("/api/trades", requireAuth, tradeRoutes);

@@ -1,4 +1,4 @@
-import { formatAmount, formatDate, formatRupee } from "../../utils/formatters";
+import { formatAmount, formatDate, formatRupee, maskPhoneNumber } from "../../utils/formatters";
 import { resolveAssetUrl } from "../../utils/assets";
 
 const sampleRows = [
@@ -64,7 +64,7 @@ export default function BrokerInvoicePreview({
   const currentStatementNumber = statementNumber || `${broker?.documents?.statementPrefix || "ST"}-${Date.now().toString().slice(-6)}`;
   const clientName = client?.fullName || "Client Name";
   const clientId = client?.idCode || client?.clientCode || "-";
-  const clientPhone = client?.phone || "-";
+  const clientPhone = maskPhoneNumber(client?.phone);
   const fromDate = filters?.fromDate ? formatDate(filters.fromDate) : "-";
   const toDate = filters?.toDate ? formatDate(filters.toDate) : "-";
   const generatedAt = formatTimestampValue();

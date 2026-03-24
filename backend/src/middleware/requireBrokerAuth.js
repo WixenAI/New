@@ -8,7 +8,7 @@ async function requireBrokerAuth(req, res, next) {
   const [, token] = authHeader.split(" ");
 
   if (!token) {
-    return res.status(401).json({ message: "Broker authentication required." });
+    return res.status(401).json({ code: "ACCESS_AUTH_REQUIRED", message: "Access authentication required." });
   }
 
   try {
@@ -16,13 +16,13 @@ async function requireBrokerAuth(req, res, next) {
     const broker = await Broker.findById(payload.sub);
 
     if (!broker || broker.status !== "active") {
-      return res.status(401).json({ message: "Broker session is inactive." });
+      return res.status(401).json({ code: "INACTIVE_ACCESS_SESSION", message: "Access session is inactive." });
     }
 
     req.broker = broker;
     return next();
   } catch (error) {
-    return res.status(401).json({ message: "Invalid or expired broker session." });
+    return res.status(401).json({ code: "INVALID_ACCESS_SESSION", message: "Invalid or expired access session." });
   }
 }
 

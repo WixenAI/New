@@ -43,6 +43,30 @@ export function formatDate(value) {
   });
 }
 
+export function maskPhoneNumber(value) {
+  const phone = String(value ?? "").trim();
+
+  if (!phone) {
+    return "-";
+  }
+
+  const digitCount = (phone.match(/\d/g) || []).length;
+  if (digitCount <= 6) {
+    return phone;
+  }
+
+  let digitIndex = 0;
+  return phone.replace(/\d/g, (digit) => {
+    digitIndex += 1;
+
+    if (digitIndex <= 3 || digitIndex > digitCount - 3) {
+      return digit;
+    }
+
+    return "X";
+  });
+}
+
 export function initialsFromName(value) {
   if (!value) {
     return "BR";

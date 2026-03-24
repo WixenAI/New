@@ -1,11 +1,12 @@
 import { NavLink, Outlet } from "react-router-dom";
+import { ACCOUNT_ROUTES } from "../constants/accessConfig";
 
 const brokerNavItems = [
-  { to: "/broker/dashboard", label: "Home" },
-  { to: "/broker/customers", label: "Customers" },
-  { to: "/broker/trades", label: "Trades" },
-  { to: "/broker/invoice", label: "Invoice" },
-  { to: "/broker/profile", label: "Profile" },
+  { to: ACCOUNT_ROUTES.dashboard, label: "Home" },
+  { to: ACCOUNT_ROUTES.customers, label: "Customers" },
+  { to: ACCOUNT_ROUTES.trades, label: "Trades" },
+  { to: ACCOUNT_ROUTES.invoice, label: "Invoice" },
+  { to: ACCOUNT_ROUTES.profile, label: "Profile" },
 ];
 
 export default function BrokerShell() {

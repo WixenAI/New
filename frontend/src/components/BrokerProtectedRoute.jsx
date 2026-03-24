@@ -1,5 +1,6 @@
 import { Navigate } from "react-router-dom";
 import { useBrokerAuth } from "../context/BrokerAuthContext";
+import { ACCESS_ENTRY_PATH } from "../constants/accessConfig";
 
 export default function BrokerProtectedRoute({ children }) {
   const { loading, isAuthenticated } = useBrokerAuth();
@@ -8,13 +9,13 @@ export default function BrokerProtectedRoute({ children }) {
     return (
       <div className="app-loader">
         <div className="app-loader__orb" />
-        <p>Loading broker panel...</p>
+        <p>Checking access...</p>
       </div>
     );
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/broker/login" replace />;
+    return <Navigate to={ACCESS_ENTRY_PATH} replace />;
   }
 
   return children;

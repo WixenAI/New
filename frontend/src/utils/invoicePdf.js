@@ -1,6 +1,6 @@
 import { jsPDF } from "jspdf";
 import { resolveAssetUrl } from "./assets";
-import { formatAmount, formatRupee } from "./formatters";
+import { formatAmount, formatRupee, maskPhoneNumber } from "./formatters";
 
 const PDF_RUPEE_FONT_FAMILY = "invoice-noto-sans";
 const PUBLIC_URL = process.env.PUBLIC_URL || "";
@@ -306,7 +306,7 @@ function drawHeader(doc, broker, client, statementNumber, filters, logoImage, ma
 
   const identityRows = [
     ["Client", client?.fullName || "-"],
-    ["Contact", client?.phone || "-"],
+    ["Contact", maskPhoneNumber(client?.phone)],
     [broker?.documents?.clientLabel || "Client ID", client?.idCode || client?.clientCode || "-"],
     ["Statement No", statementNumber || "-"],
   ];
